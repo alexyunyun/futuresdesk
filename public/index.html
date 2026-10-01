@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FuturesDesk · 期货工作台</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header id="topbar">
+  <div class="brand">FuturesDesk<em>期货模拟工作台</em></div>
+  <nav id="nav">
+    <button class="nav-btn active" data-view="workbench">工作台</button>
+    <button class="nav-btn" data-view="market">行情中心</button>
+    <button class="nav-btn" data-view="ai">AI 助手</button>
+    <button class="nav-btn" data-view="news">资讯</button>
+    <button class="nav-btn" data-view="journal">复盘日志</button>
+    <button class="nav-btn" data-view="settings">设置</button>
+  </nav>
+  <div class="top-right">
+    <span class="badge">模拟盘</span>
+    <span id="clock">--:--:--</span>
+  </div>
+</header>
+
+<div id="ticker"><div id="ticker-items"></div></div>
+
+<main>
+
+  <!-- ══════════════ 工作台 ══════════════ -->
+  <section id="view-workbench" class="view active">
+    <aside class="panel" id="watchlist">
+      <div class="panel-head">
+        <h3>行情</h3>
+        <input id="wl-search" type="text" placeholder="搜索品种…" autocomplete="off">
+      </div>
+      <div class="panel-head wl-tabs">
+        <button class="wtab active" data-wtab="all">全部</button>
+        <button class="wtab" data-wtab="fav">自选</button>
+      </div>
+      <div id="wl-list" class="scroll"></div>
+    </aside>
+
+    <div id="wb-center">
+      <div class="panel" id="chart-card">
+        <div class="panel-head chart-head">
+          <div id="chart-title">
+            <strong id="ch-name">—</strong>
+            <span id="ch-code"></span>
+            <span id="ch-last" class="mono"></span>
+            <span id="ch-chg" class="mono"></span>
+          </div>
+          <div id="chart-tools">
+            <div class="seg" id="chart-periods">
+              <button data-p="fs">分时</button>
+              <button data-p="1">1分</button>
+              <button data-p="5" class="active">5分</button>
+              <button data-p="15">15分</button>
+              <button data-p="30">30分</button>
+              <button data-p="60">60分</button>
+              <button data-p="daily">日线</button>
+              <button data-p="week">周线</button>
+            </div>
+            <select id="chart-main-ind" title="主图指标">
+              <option value="MA">MA</option>
+              <option value="BOLL">BOLL</option>
+              <option value="">无</option>
+            </select>
+            <select id="chart-sub-ind" title="副图指标">
+              <option value="VOL">VOL</option>
+              <option value="MACD">MACD</option>
+              <option value="KDJ">KDJ</option>
+              <option value="RSI">RSI</option>
+            </select>
+            <select id="contract-select" title="切换合约"></select>
+          </div>
+        </div>
+        <div id="chart-legend" class="mono"></div>
+        <div id="chart-el"></div>
+      </div>
+
+      <div class="panel" id="account-strip"></div>
+    </div>
+
+    <aside id="wb-right">
+      <div class="panel" id="order-card">
+        <div class="panel-head"><h3>下单</h3><span id="ord-pos-hint" class="muted"></span></div>
+        <div class="ord-dir">
+          <button id="ord-buy" class="dir-btn buy active">买入 开多</button>
+          <button id="ord-sell" class="dir-btn sell">卖出 开空</button>
+        </div>
+        <div class="ord-grid">
+          <label>开平
+            <select id="ord-offset"><option value="open">开仓</option><option value="close">平仓</option></select>
+          </label>
+          <label>类型
+            <select id="ord-type"><option value="limit">限价</option><option value="market">市价</option></select>
+          </label>
+          <label>价格
+            <span class="stepper"><button id="ord-minus">−</button><input id="ord-price" type="number" step="any"><button id="ord-plus">+</button></span>
+          </label>
+          <label>手数
+            <input id="ord-qty" type="number" min="1" step="1" value="1">
+          </label>
+        </div>
+        <div class="qty-quick">
+          <button data-q="1">1</button><button data-q="2">2</button><button data-q="5">5</button><button data-q="10">10</button><button data-q="max">全部</button>
+        </div>
+        <details id="ord-adv">
+          <summary>止盈 / 止损 / 条件单</summary>
+          <div class="ord-grid">
+            <label>止损价 <input id="ord-sl" type="number" step="any" placeholder="选填"></label>
+            <label>止盈价 <input id="ord-tp" type="number" step="any" placeholder="选填"></label>
+          </div>
+          <label class="cond-row"><input id="ord-cond" type="checkbox"> 条件单(触发后市价)</label>
+          <label id="cond-trigger-row" style="display:none">触发价 <input id="ord-trigger" type="number" step="any"></label>
+        </details>
+        <div id="ladder" class="mono"></div>
+        <div id="ord-est" class="muted mono"></div>
+        <button id="ord-submit" class="primary">下单</button>
+        <div id="ord-msg" class="ord-msg"></div>
+      </div>
+
+      <div class="panel" id="trade-card">
+        <div class="panel-head ttabs">
+          <button class="ttab active" data-t="pos">持仓</button>
+          <button class="ttab" data-t="ord">委托</button>
+          <button class="ttab" data-t="trd">成交</button>
+          <button class="ttab" data-t="fund">资金</button>
+          <span class="grow"></span>
+          <button id="btn-close-all" class="mini danger-ghost">全部平仓</button>
+        </div>
+        <div id="tab-pos" class="tbody scroll"></div>
+        <div id="tab-ord" class="tbody scroll" style="display:none"></div>
+        <div id="tab-trd" class="tbody scroll" style="display:none"></div>
+        <div id="tab-fund" class="tbody scroll" style="display:none">
+          <canvas id="eq-canvas" height="90"></canvas>
+          <div id="cashflow-list"></div>
+        </div>
+      </div>
+    </aside>
+  </section>
+
+  <!-- ══════════════ 行情中心 ══════════════ -->
+  <section id="view-market" class="view">
+    <div class="panel" id="group-cards"></div>
+    <div class="panel" id="market-panel">
+      <div class="panel-head">
+        <h3>全市场行情</h3>
+        <div class="seg" id="rank-tabs">
+          <button data-r="all" class="active">全部</button>
+          <button data-r="up">涨幅榜</button>
+          <button data-r="down">跌幅榜</button>
+          <button data-r="vol">成交活跃</button>
+          <button data-r="oi">持仓增量</button>
+        </div>
+        <input id="mt-search" type="text" placeholder="搜索…" autocomplete="off">
+      </div>
+      <div class="table-wrap scroll">
+        <table id="mt-table">
+          <thead><tr>
+            <th data-k="sym">品种</th><th data-k="last" class="num">最新</th><th data-k="change" class="num">涨跌</th>
+            <th data-k="changePct" class="num">涨跌幅</th><th data-k="open" class="num">开盘</th><th data-k="high" class="num">最高</th>
+            <th data-k="low" class="num">最低</th><th data-k="volume" class="num">成交量</th><th data-k="openInterest" class="num">持仓量</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ AI 助手 ══════════════ -->
+  <section id="view-ai" class="view">
+    <div class="panel" id="ai-main">
+      <div class="panel-head"><h3>AI 助手 <span class="muted" id="ai-model-tag"></span></h3></div>
+      <div id="ai-messages" class="scroll"></div>
+      <div id="ai-chips">
+        <button data-q="解读当前合约的最新行情与盘面特征">解读行情</button>
+        <button data-q="从技术面分析当前合约,给出关键支撑位与压力位">技术面分析</button>
+        <button data-q="诊断我当前的模拟持仓,给出风险与建议">持仓诊断</button>
+        <button data-q="作为一名期货交易教练,给我讲讲资金管理和止损的正确做法">聊聊资金管理</button>
+      </div>
+      <div id="ai-input-row">
+        <textarea id="ai-input" rows="2" placeholder="向 AI 提问…(Enter 发送,Shift+Enter 换行)"></textarea>
+        <button id="ai-send" class="primary">发送</button>
+      </div>
+      <div class="muted small" style="padding:0 16px 12px">内容由 DeepSeek 生成,仅供学习参考,不构成任何投资建议。</div>
+    </div>
+    <aside class="panel" id="ai-side">
+      <div class="panel-head"><h3>上下文</h3></div>
+      <label class="ctx-row"><input id="ctx-market" type="checkbox" checked> 附带当前合约行情快照</label>
+      <label class="ctx-row"><input id="ctx-positions" type="checkbox" checked> 附带我的持仓与账户</label>
+      <div id="ai-context" class="small mono"></div>
+    </aside>
+  </section>
+
+  <!-- ══════════════ 资讯 ══════════════ -->
+  <section id="view-news" class="view">
+    <div class="panel">
+      <div class="panel-head">
+        <h3>财经资讯</h3>
+        <input id="news-search" type="text" placeholder="筛选关键词…" autocomplete="off">
+        <button id="news-refresh" class="mini">刷新</button>
+      </div>
+      <div id="news-list" class="scroll"></div>
+    </div>
+  </section>
+
+  <!-- ══════════════ 复盘日志 ══════════════ -->
+  <section id="view-journal" class="view">
+    <div id="journal-stats" class="stat-row"></div>
+    <div id="journal-main">
+      <div class="panel" id="journal-editor">
+        <div class="panel-head"><h3>写复盘</h3></div>
+        <div class="jform">
+          <input id="j-date" type="date">
+          <input id="j-title" type="text" placeholder="标题(如:追多铁矿被套,反思)">
+          <textarea id="j-content" rows="9" placeholder="今天的操作、想法、情绪、教训…"></textarea>
+          <div class="jform-actions">
+            <button id="j-save" class="primary">保存</button>
+            <button id="j-ai" class="ghost">AI 点评本篇</button>
+          </div>
+          <div id="j-ai-out" class="small"></div>
+        </div>
+      </div>
+      <div class="panel" id="journal-list-panel">
+        <div class="panel-head"><h3>历史复盘</h3></div>
+        <div id="journal-list" class="scroll"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ 设置 ══════════════ -->
+  <section id="view-settings" class="view">
+    <div class="panel set-panel">
+      <div class="panel-head"><h3>DeepSeek AI</h3></div>
+      <div class="set-body">
+        <label>API Key
+          <input id="set-apikey" type="password" placeholder="sk-…(仅保存在本机浏览器)">
+        </label>
+        <label>模型
+          <select id="set-model">
+            <option value="deepseek-chat">deepseek-chat(V3)</option>
+            <option value="deepseek-reasoner">deepseek-reasoner(R1 推理)</option>
+          </select>
+        </label>
+        <div class="set-actions">
+          <button id="set-save-ai" class="primary">保存</button>
+          <button id="set-test" class="ghost">测试连接</button>
+        </div>
+        <div id="set-ai-msg" class="small muted">Key 仅存储在本机 localStorage,由浏览器直连 DeepSeek 官方接口,不会经过任何第三方服务器。</div>
+      </div>
+    </div>
+
+    <div class="panel set-panel">
+      <div class="panel-head"><h3>交易参数(模拟)</h3></div>
+      <div class="set-body">
+        <label>手续费系数 <input id="set-fee" type="number" step="0.1" min="0" max="10"> <span class="muted small">×品种默认费率</span></label>
+        <label>保证金系数 <input id="set-marginf" type="number" step="0.1" min="0.1" max="10"> <span class="muted small">×品种默认保证金率</span></label>
+        <label>重置账户 初始资金 <input id="set-capital" type="number" step="10000"> <span class="muted small">元</span></label>
+        <div class="set-actions"><button id="set-save-trade" class="primary">保存参数</button><button id="set-reset" class="danger-ghost">重置账户</button></div>
+        <div class="small muted">品种乘数 / 保证金率 / 手续费率为近似常规值,仅用于模拟计算。</div>
+      </div>
+    </div>
+
+    <div class="panel set-panel">
+      <div class="panel-head"><h3>显示</h3></div>
+      <div class="set-body">
+        <label>涨跌配色
+          <select id="set-color">
+            <option value="mono">黑白(▲▼)</option>
+            <option value="rg">红涨绿跌</option>
+          </select>
+        </label>
+        <label>行情刷新频率
+          <select id="set-poll">
+            <option value="2000">2 秒</option>
+            <option value="3000">3 秒</option>
+            <option value="5000">5 秒</option>
+            <option value="10000">10 秒</option>
+          </select>
+        </label>
+        <div class="set-actions"><button id="set-save-display" class="primary">保存</button></div>
+      </div>
+    </div>
+
+    <div class="panel set-panel">
+      <div class="panel-head"><h3>关于</h3></div>
+      <div class="set-body small muted">
+        <p>FuturesDesk 是一个纯静态运行的期货模拟工作台:实时行情来自东方财富公开接口,K线来自新浪财经,K线图表基于 KLineCharts,AI 直连 DeepSeek;交易为浏览器本地模拟撮合,不连接任何真实柜台,数据仅保存在你的浏览器里。</p>
+        <p>本工具仅用于学习与策略练习,不构成投资建议。期货交易杠杆风险极高,入市需谨慎。</p>
+        <p class="tiny">未包含模块:实盘下单(需期货公司 CTP 柜台)、期权 T 型报价与组合策略、DOM 十档订单流(需 Level-2 数据源)、套利腿执行。</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer id="statusbar">
+  <span id="sb-source"><i class="dot"></i>行情连接中…</span>
+  <span id="sb-session"></span>
+  <span class="grow"></span>
+  <span id="sb-risk" class="mono"></span>
+  <span id="sb-mode" class="badge">模拟撮合 · 非实盘</span>
+</footer>
+
+<script>window.__errs = [];window.addEventListener('error', function(e){ window.__errs.push((e.message||'error') + ' @ ' + (e.filename||'').split('/').pop() + ':' + e.lineno); });window.addEventListener('unhandledrejection', function(e){ window.__errs.push('rej:' + String(e.reason && e.reason.message || e.reason)); });</script>
+<script src="vendor/klinecharts.min.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

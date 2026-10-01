@@ -1,0 +1,12 @@
+{
+  "name": "futuresdesk",
+  "version": "2.0.0",
+  "description": "FuturesDesk · 黑白极简风格期货模拟工作台(纯静态:东财行情 + 新浪K线 + DeepSeek AI)",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "klinecharts": "^10.0.3"
+  }
+}
